@@ -1,0 +1,3 @@
+www.bad.com/malware
+evil.com:8080/steal
+malware.test/download
