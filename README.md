@@ -80,32 +80,54 @@ From there you can:
 
 ## API Usage
 
-The examples below can be executed using Swagger UI or any HTTP client such as curl or a browser.
+The recommended way to use the service is through Swagger UI.
 
-Check URL 
+#### Instructions
 
-Request
+1. Open Swagger UI in your browser:
+```bash
+http://127.0.0.1:8000/docs
+```
+2. Locate the endpoint:
 ```bash
 GET /urlinfo/1/{hostname_and_port}/{path_and_query}
 ```
-Example (safe URL)
+
+3. Click the "Try it out" button.
+   
+4. Fill the required fields:
+* hostname_and_port:  
+  Example: www.google.com
+* path_and_query:  
+  Example: search?q=test
+
+5. Click "Execute" to send the request.
+
+---
+
+## Example responses
+
+Safe URL  
+
+Request
 ```bash
 GET /urlinfo/1/www.google.com/search?q=test
 ```
-
-Response (safe)
+Response
 ```bash
 {
   "url": "www.google.com/search?q=test",
   "safe": true
 }
 ```
+---
+Malicious URL  
 
-Example (malicious URL)
+Request
 ```bash
 GET /urlinfo/1/www.bad.com/malware
 ```
-Response (malicious)
+Response
 ```bash
 {
   "url": "www.bad.com/malware",
@@ -114,7 +136,6 @@ Response (malicious)
 }
 ```
 ---
-
 ## Running tests
 
 To run the test suite:
