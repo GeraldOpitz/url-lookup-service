@@ -36,8 +36,8 @@ install:
 
 test:
 	@echo "Running tests..."
-	@$(PIP) install .[dev]
-	@$(PY) -m pytest -q
+	@$(PY) -m pytest -v --cov=app
+
 
 docker-up:
 	@echo "Starting Docker containers..."

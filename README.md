@@ -195,3 +195,9 @@ To run tests with coverage:
 ```bash
 pytest -v --cov=app
 ```
+
+or using:
+
+```bash
+make test
+```
