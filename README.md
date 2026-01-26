@@ -160,12 +160,12 @@ Response
 
 The service uses PostgreSQL as the primary source of malicious URLs.
 
-If the database is unavailable at runtime:
+If the database becomes unavailable at runtime:
 * The service does not crash
-* A fallback mechanism is used instead
-* Requests are still served with a safe default behavior
+* The error is logged for observability and troubleshooting
+* The request is handled gracefully and an explicit error response is returned
 
-This approach improves resilience and avoids total service failure due to infrastructure issues.
+This fallback behavior prevents the service from returning incorrect results while still maintaining availability and clear feedback to callers in case of infrastructure issues.
 
 To access the database you can use:
 
