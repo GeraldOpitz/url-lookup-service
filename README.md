@@ -97,6 +97,15 @@ The recommended way to use the service is through Swagger UI.
 http://127.0.0.1:8000/docs
 ```
 2. Locate the endpoint:
+The recommended way to use the service is through Swagger UI.
+
+#### Instructions
+
+1. Open Swagger UI in your browser:
+```bash
+http://127.0.0.1:8000/docs
+```
+2. Locate the endpoint:
 ```bash
 GET /urlinfo/1/{hostname_and_port}/{path_and_query}
 ```
@@ -136,6 +145,7 @@ Example
 ```bash
 GET /urlinfo/1/www.bad.com/malware
 ```
+Response
 Response
 ```bash
 {
