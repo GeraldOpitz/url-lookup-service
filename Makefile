@@ -17,7 +17,7 @@ ifeq ($(OS),Windows_NT)
 	PY := $(VENV)/Scripts/python.exe
 endif
 
-.PHONY: setup venv install test docker-up docker-down logs clean
+.PHONY: setup venv install test docker-up docker-down logs clean db
 
 setup: venv install
 	@echo "Local environment ready."

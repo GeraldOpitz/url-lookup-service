@@ -167,6 +167,12 @@ If the database is unavailable at runtime:
 
 This approach improves resilience and avoids total service failure due to infrastructure issues.
 
+To access the database you can use:
+
+```bash
+make db
+```
+
 ---
 
 ## Logging
