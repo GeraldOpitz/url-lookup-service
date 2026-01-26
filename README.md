@@ -187,6 +187,11 @@ The application includes structured logging for:
 Logs are written to standard output and are compatible with container-based
 logging systems.
 
+You can check the logs using:
+
+```bash
+make logs
+```
 ---
 
 ## Running tests
