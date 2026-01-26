@@ -36,7 +36,7 @@ install:
 
 test:
 	@echo "Running tests..."
-	@$(PY) -m pytest -v --cov=app
+	@pytest -v --cov=app
 
 
 docker-up:

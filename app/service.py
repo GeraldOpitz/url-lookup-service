@@ -1,10 +1,8 @@
+from fastapi import HTTPException
 import logging
 from app.db import get_connection
 
 logger = logging.getLogger(__name__)
-
-FALLBACK_MALICIOUS_URLS: set[str] = set()
-
 
 def normalize_url(url: str) -> str:
     if url.startswith("http://"):
@@ -36,10 +34,13 @@ def check_url_safety(hostname_and_port: str, path: str) -> dict:
                 result = cur.fetchone()
     except Exception as exc:
         logger.error(
-            "Database unavailable, using fallback storage",
+            "Database unavailable, cannot evaluate URL",
             exc_info=exc,
         )
-        result = normalized_url in FALLBACK_MALICIOUS_URLS
+        raise HTTPException(
+            status_code=503,
+            detail="URL lookup service temporarily unavailable",
+        )
 
     if result:
         logger.info("URL marked as malicious: %s", normalized_url)

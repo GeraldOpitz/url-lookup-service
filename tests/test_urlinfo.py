@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -66,15 +65,15 @@ def test_malicious_url(monkeypatch):
 
 def test_fallback_when_db_is_down(monkeypatch):
     """Service should fall back when DB is unavailable."""
-
+    
     def fake_get_connection():
         raise Exception("DB unavailable")
 
     monkeypatch.setattr("app.service.get_connection", fake_get_connection)
 
     response = client.get("/urlinfo/1/www.anything.com/test")
-    assert response.status_code == 200
-    assert response.json()["safe"] is True
+    assert response.status_code == 503
+    assert response.json()["detail"] == "URL lookup service temporarily unavailable"
 
 
 def test_url_normalization(monkeypatch):
