@@ -1,5 +1,33 @@
 from fastapi import FastAPI
+import os
+import logging
+from contextlib import asynccontextmanager
+
+from app.logging_config import setup_logging
 from app.service import check_url_safety
+
+setup_logging()
+
+logger = logging.getLogger("url-lookup-service")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    """
+    Application lifespan handler.
+
+    Logs public service information at startup and performs
+    cleanup actions during shutdown.
+    """
+    host = os.getenv("PUBLIC_HOST", "localhost")
+    port = os.getenv("PUBLIC_PORT", "8000")
+
+    logger.info(f"Swagger UI available at http://{host}:{port}/docs")
+
+    yield
+
+    logger.info("Application shutdown complete.")
+
 
 app = FastAPI(
     title="URL Lookup Service",
@@ -8,6 +36,7 @@ app = FastAPI(
         "It is intended to be queried by an HTTP proxy before allowing outbound connections."
     ),
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 

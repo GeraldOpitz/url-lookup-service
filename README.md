@@ -1,17 +1,22 @@
 # URL Lookup Service
 
-A simple HTTP service that determines whether a given URL is considered malicious.
+A small HTTP service that determines whether a given URL is considered malicious.
 It is designed to be queried by an HTTP proxy before allowing outbound connections.
 
-This project was intentionally built with a simple initial implementation and can
-be extended to handle larger scale and more complex requirements.
+The service is built with FastAPI and uses PostgreSQL as the primary data source.
+It includes fallback logic and structured logging to handle failure scenarios gracefully.
 
 ---
 
 ## Requirements
 
-- Python 3.10 or newer
-- macOS or Linux
+The recommended way to run the project is using Docker.
+
+Required:
+
+* Docker
+
+* Docker Compose
 
 ---
 
@@ -20,13 +25,14 @@ be extended to handle larger scale and more complex requirements.
 ```bash
 ├── app/ # Application source code
 ├── tests/ # Automated tests
-├── bad_urls.txt # Sample malicious URLs
-├── requirements.txt
-└── README.md
+├── docker-compose.yml # Service orchestration (API + PostgreSQL)
+├── Dockerfile # API container definition
+├── pyproject.toml # Python dependencies and project metadata
+└── README.md # Project documentation
 ```
 ---
 
-## Setup
+## Setup and running the service
 
 Clone the repository:
 
@@ -35,32 +41,34 @@ git clone https://github.com/GeraldOpitz/url-lookup-service
 cd url-lookup-service
 ```
 
-Create and activate a virtual environment:
+Start the service using Docker Compose:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+docker compose up --build
 ```
-Install dependencies:
+
+or using:
 
 ```bash
-pip install -r requirements.txt
+make docker-up
 ```
----
 
-## Running the service
-
-Start the web server locally:
+The API will be available at:
 
 ```bash
-uvicorn app.main:app --reload
+http://localhost:8000/urlinfo/1/
 ```
 
-The service will be available at:
+And you can use it by adding the hostname and path you want to check:
 
+Example (malicious URL)
 ```bash
-http://127.0.0.1:8000
+Http://localhost:8000/urlinfo/1/www.bad.com/malware
 ```
+
+
+PostgreSQL will be started automatically as part of the same setup.
+
 ---
 
 ## API Documentation (Swagger)
@@ -69,7 +77,7 @@ This service provides interactive API documentation using Swagger UI, automatica
 
 Once the service is running, open the following URL in your browser:
 ```bash
-http://127.0.0.1:8000/docs
+http://localhost:8000/docs
 ```
 From there you can:
 * Explore all available endpoints
@@ -80,32 +88,55 @@ From there you can:
 
 ## API Usage
 
-The examples below can be executed using Swagger UI or any HTTP client such as curl or a browser.
+The recommended way to use the service is through Swagger UI.
 
-Check URL 
+#### Instructions
 
-Request
+1. Open Swagger UI in your browser:
+```bash
+http://127.0.0.1:8000/docs
+```
+2. Locate the endpoint:
 ```bash
 GET /urlinfo/1/{hostname_and_port}/{path_and_query}
 ```
-Example (safe URL)
+
+3. Click the "Try it out" button.
+   
+4. Fill the required fields:
+* hostname_and_port:  
+  Example: www.google.com
+* path_and_query:  
+  Example: search?q=test
+
+5. Click "Execute" to send the request.
+
+---
+
+
+## Example responses
+
+#### Safe URL
+
+Example
 ```bash
 GET /urlinfo/1/www.google.com/search?q=test
 ```
 
-Response (safe)
+Response
 ```bash
 {
   "url": "www.google.com/search?q=test",
   "safe": true
 }
 ```
+#### Malicious URL
 
-Example (malicious URL)
+Example
 ```bash
 GET /urlinfo/1/www.bad.com/malware
 ```
-Response (malicious)
+Response
 ```bash
 {
   "url": "www.bad.com/malware",
@@ -113,6 +144,33 @@ Response (malicious)
   "reason": "URL found in malware database"
 }
 ```
+---
+
+## Database and fallback behavior
+
+The service uses PostgreSQL as the primary source of malicious URLs.
+
+If the database is unavailable at runtime:
+* The service does not crash
+* A fallback mechanism is used instead
+* Requests are still served with a safe default behavior
+
+This approach improves resilience and avoids total service failure due to infrastructure issues.
+
+---
+
+## Logging
+
+The application includes structured logging for:
+
+* Incoming requests
+* Database lookups
+* Fallback activation
+* Unexpected errors
+
+Logs are written to standard output and are compatible with container-based
+logging systems.
+
 ---
 
 ## Running tests
@@ -127,12 +185,3 @@ To run tests with coverage:
 ```bash
 pytest -v --cov=app
 ```
-
----
-
-## Development Workflow
-
-The project was developed incrementally using small, focused commits.
-Each commit introduces a single concern (project structure, endpoint,
-business logic, tests, documentation) to make the development process
-easy to follow and review.

@@ -1,14 +1,27 @@
-from pathlib import Path
+import os
+import psycopg2
 
-BAD_URLS_FILE = Path("bad_urls.txt")
+def get_db_connection():
+    return psycopg2.connect(
+        host=os.getenv("POSTGRES_HOST", "localhost"),
+        port=os.getenv("POSTGRES_PORT", "5432"),
+        user=os.getenv("POSTGRES_USER", "postgres"),
+        password=os.getenv("POSTGRES_PASSWORD", "postgres"),
+        dbname=os.getenv("POSTGRES_DB", "url_lookup"),
+    )
 
-def load_bad_urls() -> set[str]:
-    if not BAD_URLS_FILE.exists():
-        return set()
-    
-    with BAD_URLS_FILE.open("r", encoding="utf-8") as f:
-        bad_urls = {line.strip() for line in f if line.strip()}
 
-    return bad_urls
+def get_malicious_urls_from_db() -> set[str]:
+    """
+    Returns the set of malicious URLs stored in the database.
+    Raises an exception if the database is unavailable.
+    """
+    conn = get_db_connection()
 
-MALICIOUS_URLS = load_bad_urls()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT url FROM malicious_urls")
+            rows = cursor.fetchall()
+            return {row[0] for row in rows}
+    finally:
+        conn.close()
