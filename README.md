@@ -212,3 +212,77 @@ or using:
 ```bash
 make test
 ```
+---
+
+## The size of the URL list could grow infinitely. How might you scale this beyond the memory capacity of the system?
+
+For the initial implementation, malicious URLs are stored in a dockerized PostgreSQL
+database for simplicity and fast lookups. However, if the list grows beyond what can fit in
+memory, this approach would no longer scale.
+
+In that case, I would move the URLs storage to a cloud service such as Amazon RDS for
+PostgreSQL. To scale beyond a single database instance, read replicas could be added to
+handle a high volume of read requests, which fits well with this use case since URL lookups
+are read-heavy. This allows the database layer to scale horizontally for reads while
+maintaining a single source of truth for writes.
+
+## Assume that the number of requests will exceed the capacity of a single system, describe how might you solve this, and how might this change if you have to distribute this workload to an additional region, such as Europe.
+
+If the request volume exceeds the capacity of a single system, I’d scale the service using
+horizontal scaling behind a load balancer, this would allow the system to handle increased
+traffic without changing the application logic.
+
+To support traffic from an additional region such as Europe, I would deploy the same
+infrastructure in a European AWS region. Traffic routing between regions could be handled
+using Amazon Route 53, which supports routing policies such as latency-based routing or
+health-check-based routing. This allows users to be directed to the closest healthy region,
+reducing latency and improving availability.
+
+## What are some strategies you might use to update the service with new URLs? Updates may be as much as 5 thousand URLs a day with updates arriving every 10 minutes.
+
+Since updates to the malicious URL list can arrive frequently, I would rely on incremental
+updates instead of reloading the entire dataset each time.
+
+New URLs would be inserted directly into the PostgreSQL database as they arrive, for
+example through a scheduled script or administrative process that performs batched
+INSERT operations. Because the service queries the database on each request, new URLs
+become effective immediately without requiring a service restart.
+
+This approach allows the system to continue handling requests while updates are being
+applied and avoids unnecessary downtime or heavy memory usage.
+
+## You’re woken up at 3am, what are some of the things you’ll look for?
+
+If I were woken up due to an issue with the service, my first step would be to check the
+overall health of the system. This includes verifying if the instances are running correctly,
+checking CPU and memory usage and reviewing basic health indicators.
+
+I would then examine logs and metrics to identify spikes in error rates or latency. Finally, I
+would confirm if the most recent updates were applied correctly.
+
+## Does that change anything you’ve done in the app?
+
+Experiencing incidents like the 3am problem would influence the application design. I would
+introduce auto-recovery mechanisms such as health checks and automatic restarts for
+unhealthy instances.
+
+Improving observability using structured logging and metrics would also help detect and
+resolve issues automatically, reducing the need for manual intervention during incidents.
+
+## What are some considerations for the lifecycle of the app?
+
+There are several considerations that are important to ensure long-term reliability during the
+app lifecycle, such as monitoring and logging for observability, CI/CD pipelines to safely
+deliver changes, API versioning, data migrations and scaling policies.
+
+These practices help ensure that the service can evolve without disrupting users.
+
+## You need to deploy a new version of this application. What would you do?
+
+To deploy a new version of the application, I would first run automated unit and integration
+tests. The new version would then be deployed to a staging environment to verify
+functionality and performance.
+
+For production, I would use a blue/green deployment strategy to minimize downtime and
+reduce risk. After deployment, I would closely monitor logs and metrics and be prepared to
+rollback quickly if any critical issue arises.
